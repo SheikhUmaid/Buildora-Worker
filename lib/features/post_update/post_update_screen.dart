@@ -286,7 +286,10 @@ class _PostUpdateScreenState extends ConsumerState<PostUpdateScreen> {
           min: 0,
           max: 100,
           divisions: 100,
-          onChanged: (v) => setState(() => _progress = v.round()),
+          onChanged: (v) {
+            if (v ~/ 10 != (_progress ?? 0) ~/ 10) Haptics.selection();
+            setState(() => _progress = v.round());
+          },
         ),
       ],
     );
@@ -314,7 +317,7 @@ class _PostUpdateScreenState extends ConsumerState<PostUpdateScreen> {
                 Row(
                   children: [
                     const Expanded(child: Text('Contractor note', style: AppText.muted)),
-                    GestureDetector(onTap: () => setState(() => _step = 1), child: const Text('Edit details', style: TextStyle(fontWeight: FontWeight.w600))),
+                    Tappable(onTap: () => setState(() => _step = 1), child: const Text('Edit details', style: TextStyle(fontWeight: FontWeight.w600))),
                   ],
                 ),
                 const SizedBox(height: 10),

@@ -66,7 +66,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/labour-login', builder: (_, _) => const LabourLoginScreen()),
       GoRoute(path: '/forgot-password', builder: (_, _) => const ForgotPasswordScreen()),
       GoRoute(path: '/site', builder: (_, _) => const SitePostsScreen()),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
+        // Tabs stay alive but cross-fade when switching (see FadingTabsContainer).
+        navigatorContainerBuilder: (context, shell, children) => FadingTabsContainer(index: shell.currentIndex, children: children),
         builder: (context, state, shell) => _Shell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),

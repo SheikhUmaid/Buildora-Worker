@@ -26,7 +26,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: AsyncBody(
+        child: AsyncBody(loading: Skeleton.projects(), 
           value: value,
           onRetry: () => ref.invalidate(portfolioProvider),
           data: (data) {
@@ -172,7 +172,7 @@ class CaseStudyEditorScreen extends ConsumerWidget {
           children: [
             const PageHeader(title: 'Case study'),
             Expanded(
-              child: AsyncBody(
+              child: AsyncBody(loading: Skeleton.detail(), 
                 value: value,
                 onRetry: () => ref.invalidate(caseStudyProvider(projectId)),
                 data: (s) => _Editor(study: s),
@@ -241,7 +241,9 @@ class _Editor extends ConsumerWidget {
               crossAxisSpacing: 6,
               children: [
                 for (final p in {...study.highlights, ...study.allPhotos})
-                  GestureDetector(
+                  Tappable(
+                    radius: 12,
+                    haptic: true,
                     onTap: () => setState(() {
                       if (selected.contains(p)) {
                         selected.remove(p);
@@ -306,7 +308,10 @@ class _Editor extends ConsumerWidget {
                         onTap: () => openPhotoViewer(context, s.highlights, i),
                         onLongPress: i == 0
                             ? null
-                            : () => _run(context, () => repo.updatePortfolio(s.id, {'highlights': [s.highlights[i], ...s.highlights.where((h) => h != s.highlights[i])]}), 'Cover updated'),
+                            : () {
+                                Haptics.medium();
+                                _run(context, () => repo.updatePortfolio(s.id, {'highlights': [s.highlights[i], ...s.highlights.where((h) => h != s.highlights[i])]}), 'Cover updated');
+                              },
                         child: SizedBox(width: 110, height: 110, child: NetImage(s.highlights[i], radius: 14)),
                       ),
                       if (i == 0)
@@ -322,7 +327,8 @@ class _Editor extends ConsumerWidget {
                     ],
                   ),
                 ),
-              GestureDetector(
+              Tappable(
+                radius: 14,
                 onTap: () async {
                   final picked = await pickPhotos(context, camera: false, max: 12 - s.highlights.length);
                   if (picked.isNotEmpty && context.mounted) await _run(context, () => repo.uploadPortfolioPhotos(s.id, picked), 'Photos added');
@@ -350,7 +356,7 @@ class _Editor extends ConsumerWidget {
               trailing: Row(
                 children: [
                   const Expanded(child: Text('Show on portfolio', style: TextStyle(fontSize: 15))),
-                  Switch(value: f.showOnPortfolio, onChanged: (v) => _run(context, () => repo.setFeedbackVisibility(s.id, f.id, v))),
+                  Switch(value: f.showOnPortfolio, onChanged: withHaptic((v) => _run(context, () => repo.setFeedbackVisibility(s.id, f.id, v)))),
                 ],
               ),
             ),
@@ -417,7 +423,7 @@ class _SwitchRow extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         children: [
           Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
-          Switch(value: value, onChanged: onChanged),
+          Switch(value: value, onChanged: withHaptic(onChanged)),
         ],
       );
 }

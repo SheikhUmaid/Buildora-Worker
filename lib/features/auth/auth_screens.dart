@@ -73,7 +73,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             const SizedBox(height: 28),
             PillTabs(tabs: const ['Log in', 'Sign up'], index: _tab, onChanged: (i) => setState(() => _tab = i)),
             const SizedBox(height: 32),
-            Text(_tab == 0 ? 'Good to see you again' : 'Buildora Contractor', style: AppText.label),
+            Text(_tab == 0 ? 'Good to see you again' : 'Buildora On-site', style: AppText.label),
             const SizedBox(height: 4),
             Text(_tab == 0 ? 'Welcome back' : "Let's get building", style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w500, letterSpacing: -0.6)),
             const SizedBox(height: 28),
@@ -81,7 +81,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             const SizedBox(height: 36),
             AppButton(label: _tab == 0 ? 'Login' : 'Create account', loading: _busy, onPressed: _submit),
             const SizedBox(height: 12),
-            AppButton(label: 'I work on site — Laborer login', style: AppButtonStyle.outline, onPressed: () => context.push('/labour-login')),
+            AppButton(label: 'Login as Manager', style: AppButtonStyle.outline, onPressed: () => context.push('/labour-login')),
           ],
         ),
       ),
@@ -136,7 +136,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       );
 }
 
-/// Laborer login with phone + 4-digit PIN given by the contractor.
+/// Site manager login with phone + 4-digit PIN given by the contractor.
 class LabourLoginScreen extends ConsumerStatefulWidget {
   const LabourLoginScreen({super.key});
   @override
@@ -181,7 +181,7 @@ class _LabourLoginScreenState extends ConsumerState<LabourLoginScreen> {
               const SizedBox(height: 32),
               const Text('Good to see you again', style: AppText.label),
               const SizedBox(height: 4),
-              const Text('Labour login', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500, letterSpacing: -0.6)),
+              const Text('Manager login', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500, letterSpacing: -0.6)),
               const SizedBox(height: 8),
               const Text('Use the phone number and PIN your contractor gave you.', style: AppText.muted),
               const SizedBox(height: 28),

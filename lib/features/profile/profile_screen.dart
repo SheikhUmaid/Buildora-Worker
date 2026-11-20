@@ -18,7 +18,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
     final projects = ref.watch(projectsProvider).value ?? const [];
-    if (user == null) return const Scaffold(body: LoadingView());
+    if (user == null) return Scaffold(body: LoadingView(skeleton: Skeleton.profile()));
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -45,10 +45,10 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () => context.push('/notifications'),
               trailing: Switch(
                 value: user.notificationsEnabled,
-                onChanged: (v) => ref.read(authProvider.notifier).updateProfile({'notificationsEnabled': v}),
+                onChanged: withHaptic((v) => ref.read(authProvider.notifier).updateProfile({'notificationsEnabled': v})),
               ),
             ),
-            ActionTile(icon: Icons.groups_outlined, label: 'Manage Labour', onTap: () => context.push('/laborers')),
+            ActionTile(icon: Icons.groups_outlined, label: 'Managers', onTap: () => context.push('/laborers')),
             ActionTile(
               icon: Icons.logout,
               label: 'Logout',
@@ -98,7 +98,7 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () => showDeleteAccountDialog(
                 context,
                 ref,
-                warning: 'This permanently deletes your account, all your projects, updates, photos, requests and laborer logins.',
+                warning: 'This permanently deletes your account, all your projects, updates, photos, requests and manager logins.',
               ),
             ),
             const SizedBox(height: 24),

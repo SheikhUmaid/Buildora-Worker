@@ -58,7 +58,9 @@ class StarRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 1; i <= 5; i++)
-          GestureDetector(
+          Tappable(
+            scale: 0.8,
+            haptic: true,
             onTap: onChanged == null ? null : () => onChanged!(i),
             child: Padding(
               padding: const EdgeInsets.only(right: 4),
@@ -125,7 +127,7 @@ class CaseStudyBody extends StatelessWidget {
             crossAxisSpacing: 8,
             children: [
               for (var i = 0; i < s.highlights.length; i++)
-                GestureDetector(onTap: () => openPhotoViewer(context, s.highlights, i), child: NetImage(s.highlights[i], radius: 12)),
+                PhotoThumb(photos: s.highlights, index: i, scope: 'highlight'),
             ],
           ),
         ],

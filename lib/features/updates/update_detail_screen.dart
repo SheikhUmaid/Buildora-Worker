@@ -24,7 +24,7 @@ class UpdateDetailScreen extends ConsumerWidget {
     final me = ref.watch(authProvider).value;
     return Scaffold(
       body: SafeArea(
-        child: AsyncBody(
+        child: AsyncBody(loading: Skeleton.detail(), 
           value: value,
           onRetry: () => ref.invalidate(updateDetailProvider(updateId)),
           data: (d) {
@@ -73,7 +73,7 @@ class UpdateDetailScreen extends ConsumerWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                     children: [
-                      if (u.photos.isNotEmpty) ...[PhotoCarousel(photos: u.photos, height: 280), const SizedBox(height: 20)],
+                      if (u.photos.isNotEmpty) ...[PhotoCarousel(photos: u.photos, height: 280, heroTag: HeroTags.update(u.id)), const SizedBox(height: 20)],
                       UpdateNoteCard(update: u),
                       if (u.approvalCount > 0) ...[
                         const SizedBox(height: 12),

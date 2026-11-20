@@ -9,7 +9,7 @@ import '../../providers/data.dart';
 import '../../widgets/common.dart';
 import '../../widgets/contact.dart';
 
-/// Manage laborer logins: PIN, trade, assigned projects, active toggle.
+/// Manage site manager logins: PIN, trade, assigned projects, active toggle.
 class LaborersScreen extends ConsumerWidget {
   const LaborersScreen({super.key});
 
@@ -20,7 +20,7 @@ class LaborersScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const PageHeader(title: 'Manage laborers'),
+            const PageHeader(title: 'Managers'),
             Expanded(
               child: AsyncBody(
                 value: value,
@@ -28,8 +28,8 @@ class LaborersScreen extends ConsumerWidget {
                 data: (list) => list.isEmpty
                     ? const EmptyState(
                         icon: Icons.groups_outlined,
-                        title: 'No laborers yet',
-                        message: 'Add your site team. Each person gets a phone + PIN login to post photos from site.',
+                        title: 'No managers yet',
+                        message: 'Add your site managers. Each one gets a phone + PIN login to post photos and notes from site.',
                       )
                     : RefreshIndicator(
                         onRefresh: () => ref.refresh(laborersProvider.future),
@@ -44,7 +44,7 @@ class LaborersScreen extends ConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: AppButton(label: 'Add Laborer', icon: Icons.add_circle_outline, onPressed: () => showLaborerSheet(context, ref)),
+              child: AppButton(label: 'Add Manager', icon: Icons.add_circle_outline, onPressed: () => showLaborerSheet(context, ref)),
             ),
           ],
         ),
@@ -99,6 +99,7 @@ class _LaborerCard extends ConsumerWidget {
                 Switch(
                   value: l.active,
                   onChanged: (v) async {
+                    Haptics.light();
                     try {
                       await ref.read(repoProvider).editLaborer(l.id, {'active': v});
                     } catch (e) {
@@ -116,7 +117,7 @@ class _LaborerCard extends ConsumerWidget {
 }
 
 String _loginMessage(Laborer l) =>
-    'Hi ${l.name.split(' ').first}, your Buildora site login:\nPhone: ${l.phone}\nPIN: ${l.pin}\nOpen the Buildora Contractor app and tap "I work on site — Laborer login".';
+    'Hi ${l.name.split(' ').first}, your Buildora site login:\nPhone: ${l.phone}\nPIN: ${l.pin}\nOpen the Buildora On-site app and tap "Login as Manager".';
 
 Future<void> showLoginDetails(BuildContext context, WidgetRef ref, Laborer l) {
   return showAppSheet<void>(
@@ -125,7 +126,7 @@ Future<void> showLoginDetails(BuildContext context, WidgetRef ref, Laborer l) {
     builder: (ctx) => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('${l.name} logs in from the contractor app using "Laborer login".', style: AppText.muted),
+        Text('${l.name} logs in from the Buildora On-site app using "Login as Manager".', style: AppText.muted),
         const SizedBox(height: 16),
         SurfaceCard(
           child: Column(
@@ -170,9 +171,9 @@ Future<void> showLoginDetails(BuildContext context, WidgetRef ref, Laborer l) {
   );
 }
 
-/// Add or edit a laborer.
+/// Add or edit a manager.
 Future<void> showLaborerSheet(BuildContext context, WidgetRef ref, {Laborer? existing}) {
-  return showAppSheet<void>(context, title: existing == null ? 'Add laborer' : 'Edit laborer', builder: (_) => _LaborerForm(existing: existing));
+  return showAppSheet<void>(context, title: existing == null ? 'Add manager' : 'Edit manager', builder: (_) => _LaborerForm(existing: existing));
 }
 
 class _LaborerForm extends ConsumerStatefulWidget {
@@ -272,14 +273,14 @@ class _LaborerFormState extends ConsumerState<_LaborerForm> {
             Row(
               children: [
                 Expanded(child: Text(p.name, style: const TextStyle(fontSize: 16))),
-                Switch(value: _projects.contains(p.id), onChanged: (v) => setState(() => v ? _projects.add(p.id) : _projects.remove(p.id))),
+                Switch(value: _projects.contains(p.id), onChanged: withHaptic((v) => setState(() => v ? _projects.add(p.id) : _projects.remove(p.id)))),
               ],
             ),
           const SizedBox(height: 20),
           AppButton(label: widget.existing == null ? 'Add Laborer' : 'Save', orangeArrow: widget.existing == null, loading: _busy, onPressed: _save),
           if (widget.existing != null) ...[
             const SizedBox(height: 8),
-            TextButton(onPressed: _delete, child: const Text('Remove laborer', style: TextStyle(color: AppColors.red))),
+            TextButton(onPressed: _delete, child: const Text('Remove manager', style: TextStyle(color: AppColors.red))),
           ],
         ],
       ),

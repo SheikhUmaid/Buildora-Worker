@@ -11,7 +11,7 @@ import '../../widgets/common.dart';
 import '../../widgets/media.dart';
 import '../updates/update_detail_screen.dart';
 
-/// Laborer home: "Site posts" with New post / My posts.
+/// Manager home: "Site posts" with New post / My posts.
 class SitePostsScreen extends ConsumerStatefulWidget {
   const SitePostsScreen({super.key});
   @override
@@ -195,7 +195,7 @@ class _MyPosts extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(updatesFeedProvider(_query));
     final me = ref.watch(authProvider).value;
-    return AsyncBody(
+    return AsyncBody(loading: Skeleton.updates(), 
       value: value,
       onRetry: () => ref.invalidate(updatesFeedProvider(_query)),
       data: (posts) => RefreshIndicator(

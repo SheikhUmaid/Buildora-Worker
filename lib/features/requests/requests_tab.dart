@@ -44,7 +44,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: AsyncBody(
+              child: AsyncBody(loading: Skeleton.requests(), 
                 value: value,
                 onRetry: () => ref.invalidate(requestsProvider(query)),
                 data: (res) => RefreshIndicator(

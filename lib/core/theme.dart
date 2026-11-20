@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../widgets/motion.dart';
+
 class AppColors {
   static const black = Color(0xFF111111);
   static const orange = Color(0xFFF26B1D);
@@ -30,6 +32,7 @@ class AppTheme {
         error: AppColors.red,
       ),
       scaffoldBackgroundColor: AppColors.white,
+      pageTransitionsTheme: appPageTransitions, // one slide + fade for every screen
     );
     final textTheme = base.textTheme.apply(
       fontFamily: 'Inter',

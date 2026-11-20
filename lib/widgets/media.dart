@@ -26,7 +26,7 @@ class NetImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final url = AppConfig.media(path);
-    Widget placeholder([IconData icon = Icons.image_outlined]) => Container(
+    Widget placeholder(IconData icon) => Container(
           width: width,
           height: height,
           color: AppColors.surfaceDark,
@@ -41,7 +41,7 @@ class NetImage extends StatelessWidget {
             width: width,
             height: height,
             fadeInDuration: const Duration(milliseconds: 150),
-            placeholder: (_, _) => placeholder(),
+            placeholder: (_, _) => ShimmerBox(width: width, height: height),
             errorWidget: (_, _, _) => placeholder(Icons.broken_image_outlined),
           );
     return radius > 0 ? ClipRRect(borderRadius: BorderRadius.circular(radius), child: child) : child;
@@ -65,18 +65,41 @@ class AnyImage extends StatelessWidget {
   }
 }
 
-/// Fullscreen zoomable photo viewer.
-void openPhotoViewer(BuildContext context, List<String> photos, int initial) {
-  Navigator.of(context).push(MaterialPageRoute(
-    fullscreenDialog: true,
-    builder: (_) => _PhotoViewer(photos: photos, initial: initial),
-  ));
+/// Fullscreen zoomable photo viewer. Pass [heroTags] (one per photo) to fly the
+/// tapped thumbnail into the viewer.
+void openPhotoViewer(BuildContext context, List<String> photos, int initial, {List<Object?>? heroTags}) {
+  Haptics.light();
+  Navigator.of(context).push(fadeRoute<void>(_PhotoViewer(photos: photos, initial: initial, heroTags: heroTags)));
+}
+
+/// Hero tags for a row of photo thumbnails (scope must be unique on the screen).
+List<String> photoHeroTags(String scope, int count) => [for (var i = 0; i < count; i++) 'photo-$scope-$i'];
+
+/// Tappable photo thumbnail that opens the fullscreen viewer with a Hero.
+class PhotoThumb extends StatelessWidget {
+  const PhotoThumb({super.key, required this.photos, required this.index, required this.scope, this.radius = 12, this.width});
+  final List<String> photos;
+  final int index;
+  final String scope;
+  final double radius;
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) {
+    final tags = photoHeroTags(scope, photos.length);
+    return Tappable(
+      radius: radius,
+      onTap: () => openPhotoViewer(context, photos, index, heroTags: tags),
+      child: SizedBox(width: width, child: AppHero(tag: tags[index], child: NetImage(photos[index], radius: radius))),
+    );
+  }
 }
 
 class _PhotoViewer extends StatefulWidget {
-  const _PhotoViewer({required this.photos, required this.initial});
+  const _PhotoViewer({required this.photos, required this.initial, this.heroTags});
   final List<String> photos;
   final int initial;
+  final List<Object?>? heroTags;
   @override
   State<_PhotoViewer> createState() => _PhotoViewerState();
 }
@@ -107,7 +130,12 @@ class _PhotoViewerState extends State<_PhotoViewer> {
         itemBuilder: (_, i) => InteractiveViewer(
           minScale: 1,
           maxScale: 5,
-          child: Center(child: AnyImage(widget.photos[i], fit: BoxFit.contain)),
+          child: Center(
+            child: AppHero(
+              tag: (widget.heroTags != null && i < widget.heroTags!.length) ? widget.heroTags![i] : null,
+              child: AnyImage(widget.photos[i], fit: BoxFit.contain),
+            ),
+          ),
         ),
       ),
     );
@@ -116,8 +144,11 @@ class _PhotoViewerState extends State<_PhotoViewer> {
 
 /// Swipeable photo carousel with page dots. Tapping opens the fullscreen viewer.
 class PhotoCarousel extends StatefulWidget {
-  const PhotoCarousel({super.key, required this.photos, this.height = 260, this.radius = 24, this.showArrows = false, this.footer});
+  const PhotoCarousel({super.key, required this.photos, this.height = 260, this.radius = 24, this.showArrows = false, this.footer, this.heroTag});
   final List<String> photos;
+
+  /// Hero tag for the first photo, matching the card that opened this screen.
+  final Object? heroTag;
   final double height;
   final double radius;
   final bool showArrows;
@@ -148,7 +179,12 @@ class _PhotoCarouselState extends State<PhotoCarousel> {
     super.dispose();
   }
 
+  List<Object?> get _tags => [
+        for (var i = 0; i < widget.photos.length; i++) (i == 0 && widget.heroTag != null) ? widget.heroTag : 'carousel-$hashCode-$i',
+      ];
+
   void _go(int delta) {
+    Haptics.light();
     final next = (_index + delta).clamp(0, widget.photos.length - 1);
     _controller.animateToPage(next, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
   }
@@ -177,14 +213,16 @@ class _PhotoCarouselState extends State<PhotoCarousel> {
         SizedBox(
           height: widget.height,
           child: photos.isEmpty
-              ? NetImage(null, radius: widget.radius)
+              ? AppHero(tag: widget.heroTag, child: NetImage(null, radius: widget.radius))
               : PageView.builder(
                   controller: _controller,
                   itemCount: photos.length,
                   onPageChanged: (i) => setState(() => _index = i),
-                  itemBuilder: (_, i) => GestureDetector(
-                    onTap: () => openPhotoViewer(context, photos, i),
-                    child: AnyImage(photos[i], radius: widget.radius),
+                  itemBuilder: (_, i) => Tappable(
+                    radius: widget.radius,
+                    scale: 0.985,
+                    onTap: () => openPhotoViewer(context, photos, i, heroTags: _tags),
+                    child: AppHero(tag: _tags[i], child: AnyImage(photos[i], radius: widget.radius)),
                   ),
                 ),
         ),

@@ -107,7 +107,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
     if (_editing) {
       final detail = ref.watch(projectDetailProvider(widget.projectId!));
       if (detail.value == null) {
-        return Scaffold(body: SafeArea(child: Column(children: [const PageHeader(title: 'Edit project'), Expanded(child: AsyncBody(value: detail, data: (_) => const SizedBox()))])));
+        return Scaffold(body: SafeArea(child: Column(children: [const PageHeader(title: 'Edit project'), Expanded(child: AsyncBody(loading: Skeleton.detail(), value: detail, data: (_) => const SizedBox()))])));
       }
       _fill(detail.value!.project);
     }
@@ -122,7 +122,8 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                   children: [
-                    GestureDetector(
+                    Tappable(
+                      radius: 20,
                       onTap: _pickCover,
                       child: AspectRatio(
                         aspectRatio: 16 / 9,
@@ -168,7 +169,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Show budget to client'),
                       value: _budgetVisible,
-                      onChanged: (v) => setState(() => _budgetVisible = v),
+                      onChanged: withHaptic((v) => setState(() => _budgetVisible = v)),
                     ),
                     const SizedBox(height: 8),
                     AppTextField(label: 'Description (optional)', controller: _description, maxLines: 3),

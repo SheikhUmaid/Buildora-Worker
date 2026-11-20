@@ -4,6 +4,11 @@ import 'package:material_ui/material_ui.dart';
 import '../core/api.dart';
 import '../core/format.dart';
 import '../core/theme.dart';
+import 'motion.dart';
+import 'skeleton.dart';
+
+export 'motion.dart';
+export 'skeleton.dart';
 
 // ------------------------------------------------------------------ Buttons
 
@@ -70,20 +75,33 @@ class AppButton extends StatelessWidget {
                 Icon(Icons.chevron_right, color: fg),
             ],
           );
+    // Submit-style buttons give a medium tap, secondary ones a light tap.
+    final submit = style == AppButtonStyle.primary || style == AppButtonStyle.orange;
     return Opacity(
       opacity: disabled && !loading ? 0.45 : 1,
-      child: SizedBox(
-        height: height,
-        width: expand ? double.infinity : null,
-        child: Material(
-          color: bg,
-          shape: StadiumBorder(side: BorderSide(color: border, width: style == AppButtonStyle.outline ? 1.2 : 1.4)),
-          child: InkWell(
-            customBorder: const StadiumBorder(),
-            onTap: disabled ? null : onPressed,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: (trailingArrow || orangeArrow || alignStart) ? 22 : 20),
-              child: Center(child: content),
+      child: PressScale(
+        enabled: !disabled,
+        scale: 0.96,
+        builder: (onHighlight) => SizedBox(
+          height: height,
+          width: expand ? double.infinity : null,
+          child: Material(
+            color: bg,
+            shape: StadiumBorder(side: BorderSide(color: border, width: style == AppButtonStyle.outline ? 1.2 : 1.4)),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onHighlightChanged: onHighlight,
+              splashColor: fg.withValues(alpha: 0.12),
+              onTap: disabled
+                  ? null
+                  : () {
+                      submit ? Haptics.medium() : Haptics.light();
+                      onPressed!();
+                    },
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: (trailingArrow || orangeArrow || alignStart) ? 22 : 20),
+                child: Center(child: content),
+              ),
             ),
           ),
         ),
@@ -103,16 +121,21 @@ class CircleIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final btn = Material(
-      color: dark ? AppColors.black : AppColors.surface,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Icon(icon, size: size * 0.5, color: onTap == null ? AppColors.textFaint : (dark ? Colors.white : AppColors.text)),
+    final btn = PressScale(
+      enabled: onTap != null,
+      scale: 0.88,
+      builder: (onHighlight) => Material(
+        color: dark ? AppColors.black : AppColors.surface,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onHighlightChanged: onHighlight,
+          onTap: onTap,
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Icon(icon, size: size * 0.5, color: onTap == null ? AppColors.textFaint : (dark ? Colors.white : AppColors.text)),
+          ),
         ),
       ),
     );
@@ -302,21 +325,27 @@ class PillTabs extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => onChanged(i),
+                onTap: () {
+                  if (i != index) Haptics.light();
+                  onChanged(i);
+                },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
                   decoration: BoxDecoration(
                     color: i == index ? AppColors.black : Colors.transparent,
                     borderRadius: BorderRadius.circular(height),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    tabs[i],
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 220),
                     style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 15,
                       fontWeight: i == index ? FontWeight.w600 : FontWeight.w500,
                       color: i == index ? Colors.white : AppColors.textMuted,
                     ),
+                    child: Text(tabs[i]),
                   ),
                 ),
               ),
@@ -338,25 +367,40 @@ class AppChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selected ? AppColors.black : AppColors.surface,
-      shape: const StadiumBorder(),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: dense ? 14 : 18, vertical: dense ? 8 : 11),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(label,
-                  style: TextStyle(
-                    fontSize: dense ? 13 : 14,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                    color: selected ? Colors.white : AppColors.text.withValues(alpha: 0.75),
-                  )),
-              if (trailing != null) ...[const SizedBox(width: 4), trailing!],
-            ],
+    return PressScale(
+      enabled: onTap != null,
+      scale: 0.93,
+      builder: (onHighlight) => AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        decoration: ShapeDecoration(color: selected ? AppColors.black : AppColors.surface, shape: const StadiumBorder()),
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const StadiumBorder(),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onHighlightChanged: onHighlight,
+            onTap: onTap == null
+                ? null
+                : () {
+                    Haptics.light();
+                    onTap!();
+                  },
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: dense ? 14 : 18, vertical: dense ? 8 : 11),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                        fontSize: dense ? 13 : 14,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                        color: selected ? Colors.white : AppColors.text.withValues(alpha: 0.75),
+                      )),
+                  if (trailing != null) ...[const SizedBox(width: 4), trailing!],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -418,23 +462,29 @@ class ProgressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(label, style: AppText.muted), Text('$progress%', style: AppText.muted)],
-        ),
-        const SizedBox(height: 12),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress.clamp(0, 100) / 100,
-            minHeight: 6,
-            backgroundColor: AppColors.surfaceDark,
-            color: AppColors.black,
+    // Fills up from zero when first shown, then animates to new values.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: progress.clamp(0, 100) / 100),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOutCubic,
+      builder: (_, v, _) => Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [Text(label, style: AppText.muted), Text('${(v * 100).round()}%', style: AppText.muted)],
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: v,
+              minHeight: 6,
+              backgroundColor: AppColors.surfaceDark,
+              color: AppColors.black,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -451,13 +501,18 @@ class SurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: color,
-      borderRadius: BorderRadius.circular(radius),
-      child: InkWell(
+    return PressScale(
+      enabled: onTap != null,
+      scale: 0.975,
+      builder: (onHighlight) => Material(
+        color: color,
         borderRadius: BorderRadius.circular(radius),
-        onTap: onTap,
-        child: Padding(padding: padding, child: child),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onHighlightChanged: onHighlight,
+          onTap: onTap,
+          child: Padding(padding: padding, child: child),
+        ),
       ),
     );
   }
@@ -668,21 +723,39 @@ class FloatingNavBar extends StatelessWidget {
           children: [
             for (var i = 0; i < items.length; i++)
               Expanded(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(40),
-                  onTap: () => onTap(i),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Badge(
-                        isLabelVisible: (badges[i] ?? 0) > 0,
-                        label: Text('${badges[i]}'),
-                        backgroundColor: AppColors.orange,
-                        child: Icon(i == index ? items[i].activeIcon : items[i].icon, color: i == index ? AppColors.orange : Colors.white, size: 22),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(items[i].label, style: TextStyle(fontSize: 12, color: i == index ? AppColors.orange : Colors.white)),
-                    ],
+                child: PressScale(
+                  scale: 0.9,
+                  builder: (onHighlight) => InkWell(
+                    borderRadius: BorderRadius.circular(40),
+                    splashColor: Colors.white.withValues(alpha: 0.12),
+                    highlightColor: Colors.white.withValues(alpha: 0.06),
+                    onHighlightChanged: onHighlight,
+                    onTap: () {
+                      if (i != index) Haptics.light();
+                      onTap(i);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedScale(
+                          scale: i == index ? 1.12 : 1,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutBack,
+                          child: Badge(
+                            isLabelVisible: (badges[i] ?? 0) > 0,
+                            label: Text('${badges[i]}'),
+                            backgroundColor: AppColors.orange,
+                            child: Icon(i == index ? items[i].activeIcon : items[i].icon, color: i == index ? AppColors.orange : Colors.white, size: 22),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 220),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: i == index ? AppColors.orange : Colors.white),
+                          child: Text(items[i].label),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -695,10 +768,12 @@ class FloatingNavBar extends StatelessWidget {
 
 // ------------------------------------------------------------------ States
 
+/// Loading state: a shimmering skeleton shaped like the content (defaults to a list of rows).
 class LoadingView extends StatelessWidget {
-  const LoadingView({super.key});
+  const LoadingView({super.key, this.skeleton});
+  final Widget? skeleton;
   @override
-  Widget build(BuildContext context) => const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(strokeWidth: 2.5)));
+  Widget build(BuildContext context) => skeleton ?? Skeleton.tiles(count: 5);
 }
 
 class EmptyState extends StatelessWidget {
@@ -754,26 +829,44 @@ class ErrorView extends StatelessWidget {
 
 /// Renders an [AsyncValue] with consistent loading / error states.
 class AsyncBody<T> extends StatelessWidget {
-  const AsyncBody({super.key, required this.value, required this.data, this.onRetry});
+  const AsyncBody({super.key, required this.value, required this.data, this.onRetry, this.loading});
   final AsyncValue<T> value;
   final Widget Function(T data) data;
   final VoidCallback? onRetry;
+
+  /// Skeleton shown while loading (see [Skeleton]); defaults to [LoadingView].
+  final Widget? loading;
 
   @override
   Widget build(BuildContext context) {
     return value.when(
       skipLoadingOnRefresh: true,
       skipLoadingOnReload: true,
-      data: data,
-      loading: () => const LoadingView(),
+      data: (d) => FadeIn(child: data(d)),
+      loading: () => loading ?? const LoadingView(),
       error: (e, _) => ErrorView(error: e, onRetry: onRetry),
     );
   }
 }
 
+/// Fades content in once when it first appears (e.g. replacing a skeleton).
+class FadeIn extends StatelessWidget {
+  const FadeIn({super.key, required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOut,
+        builder: (_, v, child) => Opacity(opacity: v, child: child),
+        child: child,
+      );
+}
+
 // ------------------------------------------------------------------ Feedback helpers
 
 void showSnack(BuildContext context, String message, {bool error = false}) {
+  if (error) Haptics.error();
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(

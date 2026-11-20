@@ -9,7 +9,7 @@ import '../../widgets/common.dart';
 import '../../widgets/contact.dart';
 
 String inviteMessage(Project p, String code) =>
-    'Follow the daily progress of ${p.name} on Buildora. Download the Buildora app, sign up and join with invite code: $code';
+    'Follow the daily progress of ${p.name} on Buildora. Download the Buildora Insight app, sign up and join with invite code: $code';
 
 /// Shows the project's invite code with copy / share / regenerate.
 Future<void> showInviteSheet(BuildContext context, Project project) {
@@ -47,7 +47,7 @@ class _InviteBodyState extends ConsumerState<_InviteBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Share this code with your client. They enter it in the Buildora client app to follow ${widget.project.name}.', style: AppText.muted),
+        Text('Share this code with your client. They enter it in the Buildora Insight app to follow ${widget.project.name}.', style: AppText.muted),
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 24),

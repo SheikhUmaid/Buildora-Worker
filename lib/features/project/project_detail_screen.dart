@@ -47,7 +47,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               trailing: project == null ? null : CircleIconButton(icon: Icons.more_horiz, tooltip: 'Project options', onTap: () => showProjectOptions(context, ref, project)),
             ),
             Expanded(
-              child: AsyncBody(
+              child: AsyncBody(loading: Skeleton.detail(), 
                 value: detail,
                 onRetry: () => ref.invalidate(projectDetailProvider(_id)),
                 data: (d) => RefreshIndicator(onRefresh: _refresh, child: _body(d)),
@@ -81,6 +81,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       children: [
         PhotoCarousel(
           photos: photos,
+          heroTag: HeroTags.project(p.id),
           height: 220,
           showArrows: true,
           footer: Column(
@@ -181,7 +182,7 @@ class _UpdatesTab extends ConsumerWidget {
     final value = ref.watch(projectUpdatesProvider(project.id));
     return value.when(
       skipLoadingOnRefresh: true,
-      loading: () => const LoadingView(),
+      loading: () => LoadingView(skeleton: Skeleton.updates(padding: EdgeInsets.zero)),
       error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(projectUpdatesProvider(project.id))),
       data: (updates) {
         final byDay = <DateTime, List<SiteUpdate>>{};
@@ -234,13 +235,15 @@ class _CompactUpdate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Tappable(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      radius: 12,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 80, height: 64, child: update.photos.isEmpty ? NetImage(null, radius: 10) : NetImage(update.photos.first, radius: 10)),
+          SizedBox(width: 80, height: 64, child: update.photos.isEmpty
+                ? NetImage(null, radius: 10)
+                : AppHero(tag: HeroTags.update(update.id), child: NetImage(update.photos.first, radius: 10))),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -279,7 +282,7 @@ class _RequestsTab extends ConsumerWidget {
         const SizedBox(height: 16),
         value.when(
           skipLoadingOnRefresh: true,
-          loading: () => const LoadingView(),
+          loading: () => LoadingView(skeleton: Skeleton.requests(count: 2, padding: EdgeInsets.zero)),
           error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(requestsProvider(query))),
           data: (res) => res.requests.isEmpty
               ? const EmptyState(icon: Icons.chat_bubble_outline, title: 'No requests', message: 'Client questions and change requests show up here.')
@@ -366,7 +369,16 @@ Future<void> showProgressSheet(BuildContext context, WidgetRef ref, Project p) a
               Text('${value.round()}%', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
             ],
           ),
-          Slider(value: value, min: 0, max: 100, divisions: 100, onChanged: (v) => setState(() => value = v)),
+          Slider(
+            value: value,
+            min: 0,
+            max: 100,
+            divisions: 100,
+            onChanged: (v) {
+              if (v ~/ 10 != value ~/ 10) Haptics.selection();
+              setState(() => value = v);
+            },
+          ),
           const SizedBox(height: 16),
           AppButton(label: 'Save', onPressed: () => Navigator.pop(ctx, true)),
         ],
@@ -401,7 +413,7 @@ Future<void> showProjectOptions(BuildContext context, WidgetRef ref, Project p) 
           item('Change status', 'status'),
           item('Share invite code', 'invite'),
           if (p.clients.isNotEmpty) item('Manage clients', 'clients'),
-          item('Laborers on this project', 'laborers'),
+          item('Managers on this project', 'laborers'),
           if (p.isCompleted) item('Portfolio case study', 'portfolio'),
           item('Delete project', 'delete', danger: true),
         ],

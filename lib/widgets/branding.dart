@@ -20,19 +20,28 @@ class BuildoraLogo extends StatelessWidget {
       children: [
         BrandMark(size: size),
         SizedBox(width: size * 0.4),
-        Text(
-          kAppName,
-          style: TextStyle(fontSize: size * 0.82, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: color, height: 1),
-        ),
-        if (kAppBadge.isNotEmpty) ...[
-          SizedBox(width: size * 0.25),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: size * 0.2, vertical: size * 0.06),
-            decoration: BoxDecoration(color: AppColors.orange, borderRadius: BorderRadius.circular(size)),
-            child: Text(kAppBadge, style: TextStyle(fontSize: size * 0.34, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.6)),
-          ),
-        ],
+        BrandWordmark(fontSize: size * 0.82, color: color),
       ],
+    );
+  }
+}
+
+/// "Buildora Insight" / "Buildora On-site": brand name in bold, app suffix in orange.
+class BrandWordmark extends StatelessWidget {
+  const BrandWordmark({super.key, this.fontSize = 22, this.color = AppColors.text});
+  final double fontSize;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(children: [
+        TextSpan(text: kBrandName, style: TextStyle(fontWeight: FontWeight.w700, color: color)),
+        if (kAppSuffix.isNotEmpty)
+          TextSpan(text: ' $kAppSuffix', style: const TextStyle(fontWeight: FontWeight.w500, color: AppColors.orange)),
+      ]),
+      maxLines: 1,
+      style: TextStyle(fontSize: fontSize, letterSpacing: -0.5, height: 1),
     );
   }
 }
@@ -96,22 +105,7 @@ class BuildoraLogoText extends StatelessWidget {
   const BuildoraLogoText({super.key, this.fontSize = 34});
   final double fontSize;
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(kAppName, style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700, letterSpacing: -1)),
-        if (kAppBadge.isNotEmpty) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(color: AppColors.orange, borderRadius: BorderRadius.circular(20)),
-            child: Text(kAppBadge, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.8)),
-          ),
-        ],
-      ],
-    );
-  }
+  Widget build(BuildContext context) => BrandWordmark(fontSize: fontSize);
 }
 
 /// "Buildora · v1.0.0 (1)" footer for the profile screens.

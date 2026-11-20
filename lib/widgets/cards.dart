@@ -8,9 +8,12 @@ import 'media.dart';
 
 /// Big project card: cover, name, location, status, progress, last update.
 class ProjectCard extends StatelessWidget {
-  const ProjectCard({super.key, required this.project, this.onTap});
+  const ProjectCard({super.key, required this.project, this.onTap, this.hero = true});
   final Project project;
   final VoidCallback? onTap;
+
+  /// Fly the cover into the project screen (turn off if the card can appear twice on a screen).
+  final bool hero;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,10 @@ class ProjectCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(aspectRatio: 16 / 9, child: NetImage(project.coverImage, radius: 18)),
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: AppHero(tag: hero ? HeroTags.project(project.id) : null, child: NetImage(project.coverImage, radius: 18)),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 14, 4, 4),
             child: Column(
@@ -116,8 +122,11 @@ class TimelineEntry extends StatelessWidget {
 
 /// Card with up to two photos, the note and "5 photos · 18 laborers".
 class UpdateCard extends StatelessWidget {
-  const UpdateCard({super.key, required this.update, this.onTap, this.showProject = false});
+  const UpdateCard({super.key, required this.update, this.onTap, this.showProject = false, this.hero = true});
   final SiteUpdate update;
+
+  /// Fly the first photo into the update detail screen.
+  final bool hero;
   final VoidCallback? onTap;
   final bool showProject;
 
@@ -141,7 +150,10 @@ class UpdateCard extends StatelessWidget {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          NetImage(photos[i], radius: 14),
+                          if (i == 0)
+                            AppHero(tag: hero ? HeroTags.update(update.id) : null, child: NetImage(photos[i], radius: 14))
+                          else
+                            NetImage(photos[i], radius: 14),
                           if (i == 1 && update.photos.length > 2)
                             Container(
                               decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(14)),

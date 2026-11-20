@@ -83,7 +83,7 @@ class _ReplySheetState extends ConsumerState<_ReplySheet> {
   Widget build(BuildContext context) {
     final value = ref.watch(requestDetailProvider(widget.requestId));
     return value.when(
-      loading: () => const SizedBox(height: 300, child: LoadingView()),
+      loading: () => SizedBox(height: 300, child: LoadingView(skeleton: Skeleton.requests(count: 1, padding: EdgeInsets.zero))),
       error: (e, _) => SizedBox(height: 300, child: ErrorView(error: e, onRetry: () => ref.invalidate(requestDetailProvider(widget.requestId)))),
       data: (r) {
         final status = _status ?? r.status;
@@ -126,7 +126,7 @@ class _ReplySheetState extends ConsumerState<_ReplySheet> {
                           for (var i = 0; i < r.photos.length; i++)
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
-                              child: GestureDetector(onTap: () => openPhotoViewer(context, r.photos, i), child: SizedBox(width: 80, child: NetImage(r.photos[i], radius: 12))),
+                              child: PhotoThumb(photos: r.photos, index: i, scope: 'request-${r.id}', width: 80),
                             ),
                         ],
                       ),
